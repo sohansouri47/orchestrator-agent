@@ -1,0 +1,6 @@
+/.venv/
+.env
+__pycache__/
+/myenv/
+__init__.py
+/logs/
