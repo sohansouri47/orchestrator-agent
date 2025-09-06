@@ -16,6 +16,7 @@ from src.common.db.Postgre import ConversationHistoryManager
 import json
 import re
 from src.common.logger.logger import get_logger
+from src.common.mcp_registry.mcp_connector import MCPConnector
 
 logger = get_logger("Agent")
 
@@ -30,6 +31,7 @@ class OrchestratorAgent:
         self._agent = None
         self._runner = None
         self._context_id = None
+        self._mcp_connector = MCPConnector()
 
     async def _initialize(self):
         """Initialize async components"""
@@ -42,6 +44,7 @@ class OrchestratorAgent:
         )
 
     async def _build_agent(self) -> LlmAgent:
+        mcp_tools = await self._mcp_connector.get_tools()
         agentlist = await self._agent_registry.get_agents_list()
         agentcards = await self._agent_registry.get_context_cards()
         logger.info("Get all agentcards from the registry")
@@ -60,10 +63,7 @@ class OrchestratorAgent:
             ),
             description=AgentPrompts.OrchestratorAgent.DESCRIPTION,
             model=LiteLlm(model=LlmConfig.Anthropic.SONET_4_MODEL),
-            tools=[
-                FunctionTool(self.redirect_agent),
-                # FunctionTool(self.operator_handoff),
-            ],
+            tools=[FunctionTool(self.redirect_agent), *mcp_tools],
         )
 
     # async def operator_handoff(self):

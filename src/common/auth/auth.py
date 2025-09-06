@@ -5,9 +5,12 @@ import certifi
 import aiohttp
 import redis.asyncio as redis
 from src.common.config.config import Auth
+from src.common.logger.logger import get_logger
+
+logger = get_logger("DESCOPE AUTH")
 
 TOKEN_BUFFER_SECONDS = 300
-logger = logging.getLogger("DESCOPE AUTH")
+
 
 # Initialize async Redis client
 redis_client = redis.from_url(

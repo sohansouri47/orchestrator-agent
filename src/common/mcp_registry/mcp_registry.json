@@ -1,6 +1,7 @@
 {
   "mcpServers": {
-    "operator_handoff": {
+    "call_cops": {
+      "command": "streamable_http",
       "args": [
         "http://localhost:3000/mcp"
       ]

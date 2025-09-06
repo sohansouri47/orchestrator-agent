@@ -30,6 +30,7 @@ class AgentPrompts:
             "RESPONSE FORMAT:\n"
             "- Do not generate new JSON.\n"
             "- Always return exactly the JSON string produced by the tool call.\n"
+            "- When there is a crime in progress form a reason and do the TOOLCALL: call_cops(reason)"
         )
 
     class FireAgent:
