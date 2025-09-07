@@ -46,6 +46,7 @@ class OrchestratorAgent:
     async def _build_agent(self) -> LlmAgent:
         mcp_tools = await self._mcp_connector.get_tools()
         agentlist = await self._agent_registry.get_agents_list()
+        logger.info(f"agentlist{agentlist}")
         agentcards = await self._agent_registry.get_context_cards()
         logger.info("Get all agentcards from the registry")
         conversation_history = await self._conversation_history_manger.fetch_last_n(

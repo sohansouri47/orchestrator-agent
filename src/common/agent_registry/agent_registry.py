@@ -3,6 +3,10 @@ import os
 from a2a.types import AgentCard
 from a2a.client import A2ACardResolver
 import httpx
+import json
+from src.common.logger.logger import get_logger
+
+logger = get_logger("agent_registry")
 
 
 class AgentRegistry:
@@ -21,13 +25,10 @@ class AgentRegistry:
         Returns:
             List of AgentCards
         """
-        if not file_path:
-            file_path = os.path.join(os.path.dirname(__file__), "agent_registry.json")
-
         try:
-            with open(file_path, "r") as f:
-                base_urls = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
+            base_urls = json.loads(os.getenv("AGENT_REGISTRY", "[]"))
+            logger.info(f"baseurls: {base_urls}")
+        except json.JSONDecodeError:
             return []
 
         cards = []
