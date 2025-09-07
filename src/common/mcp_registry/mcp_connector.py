@@ -1,17 +1,13 @@
 import asyncio
 import logging
 
-# ADDED: Import signal and sys for graceful shutdown handling
-import signal
-import sys
-from contextlib import asynccontextmanager
-from src.common.mcp_registry.mcp_registry import MCPDiscovery
+# from src.common.mcp_registry.mcp_registry import MCPDiscovery
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool import StdioConnectionParams
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPServerParams
-
+import json
 from mcp import StdioServerParameters
-
+import os
 
 # ADDED: Configure logging for MCP cleanup issues to reduce noise during shutdown
 logging.getLogger("mcp").setLevel(logging.ERROR)
@@ -28,7 +24,8 @@ class MCPConnector:
     """
 
     def __init__(self, config_file: str = None):
-        self.discovery = MCPDiscovery(config_file=config_file)
+        self.discovery = json.loads(os.getenv("MCPREGISTRY", []))
+        logger.info(self.discovery)
         self.tools: list[MCPToolset] = []
 
     async def _load_all_tools(self):
@@ -39,20 +36,10 @@ class MCPConnector:
 
         tools = []
 
-        for name, server in self.discovery.list_servers().items():
+        for server in self.discovery:
+            logger.info(server)
             try:
-                if server.get("command") == "streamable_http":
-                    conn = StreamableHTTPServerParams(url=server["args"][0])
-                else:
-                    conn = StdioConnectionParams(
-                        server_params=StdioServerParameters(
-                            command=server["command"], args=server["args"]
-                        ),
-                        timeout=5,
-                    )
-
-                # ADDED: Wrap toolset creation with timeout and error handling
-                # This prevents hanging on unresponsive MCP servers
+                conn = StreamableHTTPServerParams(url=server)
                 toolset = await asyncio.wait_for(
                     MCPToolset(connection_params=conn).get_tools(), timeout=10.0
                 )
@@ -61,24 +48,18 @@ class MCPConnector:
                     # Create the actual toolset object for caching
                     mcp_toolset = MCPToolset(connection_params=conn)
                     tool_names = [tool.name for tool in toolset]
-                    print(
-                        f"[bold green]Loaded tools from server [cyan]'{name}'[/cyan]:[/bold green] {', '.join(tool_names)}"
-                    )
+                    # print(
+                    #     f"[bold green]Loaded tools from server [cyan]'{name}'[/cyan]:[/bold green] {', '.join(tool_names)}"
+                    # )
                     tools.append(mcp_toolset)
 
             # ADDED: Specific error handling for different types of connection failures
             except asyncio.TimeoutError:
-                print(
-                    f"[bold red]Timeout loading tools from server '{name}' (skipping)[/bold red]"
-                )
+                print(f"[bold red]Timeout loading tools from server ")
             except ConnectionError as e:
-                print(
-                    f"[bold red]Connection error loading tools from server '{name}': {e} (skipping)[/bold red]"
-                )
+                print(f"[bold red]Connection error loading tools from server ")
             except Exception as e:
-                print(
-                    f"[bold red]Error loading tools from server '{name}': {e} (skipping)[/bold red]"
-                )
+                print(f"[bold red]Error loading tools from server ")
 
         self.tools = tools
 
