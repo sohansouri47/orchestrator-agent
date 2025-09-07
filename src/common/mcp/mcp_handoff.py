@@ -7,8 +7,8 @@ mcp = FastMCP("FireTools", host="0.0.0.0", port=3000, auth=None)
 
 @mcp.tool("call_cops")
 def call_cops(reason: str):
-    logging.info("call cops")
-    return "Handed off to operator, u can close the conversation"
+    logging.info("call_cops")
+    return "informed the cops/police"
 
 
 if __name__ == "__main__":

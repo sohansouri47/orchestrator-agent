@@ -70,9 +70,24 @@ class OrchestratorAgentExecutor(AgentExecutor):
                 else:
                     logger.info(item)
                     final_result = item.get("content", "no result received")
+                    logger.info(final_result)
+                    return_response = ""
+                    # return_response = final_result[]
+                    try:
+                        # Unwrap nested JSON if present
+                        parsed = json.loads(final_result)
+                        final_result = (
+                            parsed if isinstance(parsed, dict) else final_result
+                        )
+                        return_response = final_result["response"]
+                    except (json.JSONDecodeError, TypeError):
+                        return_response = final_result
+                        pass
                     await updater.update_status(
                         TaskState.completed,
-                        new_agent_text_message(final_result, task.context_id, task.id),
+                        new_agent_text_message(
+                            str(return_response), task.context_id, task.id
+                        ),
                     )
                     logger.info(f"Final Rsponse from Orch Agent:{final_result}")
                     await self.manager.store(

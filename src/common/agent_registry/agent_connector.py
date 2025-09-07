@@ -61,7 +61,7 @@ class AgentConnector:
             )
             logger.info("Request sennt to subagent")
             response = await a2a_client.send_message(request=request)
-            logger.info(f"Response recieved to subagent:{response}")
+            logger.info(f"Response recieved from subagent:{response}")
             response_data = response.model_dump(mode="json", exclude_none=True)
 
             try:
