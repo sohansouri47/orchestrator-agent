@@ -24,7 +24,13 @@ class MCPConnector:
     """
 
     def __init__(self, config_file: str = None):
-        self.discovery = json.loads(os.getenv("MCPREGISTRY", []))
+        raw = os.getenv("MCPREGISTRY", "[]")  # always default to valid JSON string
+        try:
+            self.discovery = json.loads(raw)
+        except json.JSONDecodeError:
+            logger.error(f"Invalid MCPREGISTRY format: {raw}")
+            self.discovery = []
+        self.tools: list[MCPToolset] = []
         logger.info(self.discovery)
         self.tools: list[MCPToolset] = []
 

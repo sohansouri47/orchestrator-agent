@@ -64,11 +64,23 @@ class OrchestratorAgent:
             ),
             description=AgentPrompts.OrchestratorAgent.DESCRIPTION,
             model=LiteLlm(model=LlmConfig.Anthropic.SONET_4_MODEL),
-            tools=[FunctionTool(self.redirect_agent), *mcp_tools],
+            tools=[
+                FunctionTool(self.redirect_agent),
+                # FunctionTool(self.operator_handoff),
+                *mcp_tools,
+            ],
         )
 
-    # async def operator_handoff(self):
-    #     return "Handded off to operator"
+    async def operator_handoff(self, summary: str):
+        """
+        Tool callable by orchestrator agent to handoff to human operator.
+        """
+        logger.info(f"Operator handoff summary: {summary}")
+        return {
+            "agent": "orchestrator_agent",
+            "response": "Operator handoff initiated",
+            "next_agent": "finish",
+        }
 
     async def redirect_agent(self, agent_name: str, message: str) -> str:
         logger.info("Agent Redirected")

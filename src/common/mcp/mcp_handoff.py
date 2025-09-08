@@ -1,19 +1,34 @@
+import logging
+import os
 from mcp.server.fastmcp import FastMCP
 
-import logging
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("OrchestratorMCP")
 
-mcp = FastMCP("OrchTools", host="0.0.0.0", port=3000, auth=None)
+# Read host and port from environment variables, provide defaults
+MCP_HOST = os.getenv("MCP_HOST", "0.0.0.0")
+MCP_PORT = int(os.getenv("MCP_PORT", "3000"))
+
+logger.info(f"Starting Orchestrator MCP server on {MCP_HOST}:{MCP_PORT}")
+
+# Initialize MCP server
+mcp = FastMCP("OrchTools", host=MCP_HOST, port=MCP_PORT, auth=None)
 
 
 @mcp.tool("operator_handoff")
-def call_cops(summary: str):
-    logging.info(f"operator_handoff summary:{summary}")
+async def operator_handoff(summary: str):
+    """
+    Tool callable by orchestrator agent to handoff to human operator.
+    """
+    logger.info(f"Operator handoff summary: {summary}")
     return {
         "agent": "orchestrator_agent",
-        "response": f"Operator handoff",
+        "response": "Operator handoff initiated",
         "next_agent": "finish",
     }
 
 
 if __name__ == "__main__":
+    # Use streamable-http transport
     mcp.run(transport="streamable-http")
