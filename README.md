@@ -84,3 +84,11 @@ sequenceDiagram
 ---
 
 ## How to Run
+* Run locally:
+
+```bash
+source venv/bin/activate
+poetry install
+cp .env.example .env
+python3 -m src.agents.OrchestratorAgent
+```
